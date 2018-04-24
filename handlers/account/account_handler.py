@@ -3,13 +3,13 @@ from handlers.base.base_handler import BaseHandler
 from libs.account import account_libs
 
 class UserProfileHandler(BaseHandler):
-
+    ''' 用户信息页面 '''
     def get(self):
         self.render('account/account_profile.html', message=None)
 
 
 class ProfileEditHandler(BaseHandler):
-
+    ''' 用户编辑信息页面 '''
     def get(self):
         self.render('account/account_edit.html')
 
@@ -24,7 +24,7 @@ class ProfileEditHandler(BaseHandler):
 
 
 class ProfileModifyEmailHandler(BaseHandler):
-
+    ''' 绑定邮箱页面 '''
     def get(self):
         self.render('account/account_send_email.html')
 
@@ -38,7 +38,7 @@ class ProfileModifyEmailHandler(BaseHandler):
 
 
 class ProfileAuthEmailHandler(BaseHandler):
-
+    ''' 用户绑定邮箱 '''
     def get(self):
         email_code = self.get_argument('code', '')
         email = self.get_argument('email', '')
@@ -52,7 +52,7 @@ class ProfileAuthEmailHandler(BaseHandler):
 
 
 class AvatarAddHandler(BaseHandler):
-
+    ''' 用户上传头像 '''
     def post(self):
         avatar_data = self.request.files.get('user_avatar', '')
         if avatar_data:
