@@ -1,11 +1,31 @@
 # coding=utf-8
+import tornado.escape
+from uuid import uuid4
+from datetime import datetime
+from tornado.concurrent import run_on_executor
+
 from models.files.upload_file_model import  (
     Files, FilesToUser, DelFilesToUser,
 )
-from uuid import uuid4
-from datetime import datetime
+from models.account.account_user_model import User
 
 
+def msg_count(self):
+    msgs = self.conn.lrange('message:%s' % self.current_user.name, 0, -1)
+
+    msgs.reverse()
+    dict_list = []
+    for message in msgs:
+        message = tornado.escape.json_decode(message)
+        message['sender_module'] = User.by_name(message['sender'])
+        dict_list.append(message)
+    count = len(msgs)
+    msgs = dict(
+        count = count,
+        dict_list = dict_list
+    )
+
+    return msgs
 def get_files_lib(self, page):
     ''' 获取所有文件 '''
     files = Files.all()
@@ -20,12 +40,14 @@ def upload_files_lib(self, upload_files):
     return file_path if file_path else None
 
 def save_file(self, upload_file):
+    ''' 文件的存储 '''
     files_ext = upload_file['filename'].split('.')[-1]
     if files_ext not in ['jpg', 'bmp', 'png', 'ogg', 'mp3', 'mp4']:
         return {'status': False, 'msg': ' 不支持该格式'}
 
     uuidname = str(uuid4()) + '.{}'.format(files_ext)
     file_content = upload_file['body']
+
     old_file = Files.file_is_existed(file_content)
     if old_file is not None:
         file_path = 'http://127.0.0.1:8000/images/' + old_file.uuid
@@ -49,6 +71,15 @@ def save_file(self, upload_file):
     self.db.commit()
     file_path = 'http://127.0.0.1:8000/images/' + file.uuid
     return {'status': True, 'msg': '文件保存成功','data': file_path}
+
+
+def del_file(self, uuid):
+    files = Files.by_uuid(uuid)
+    files.files_users.remove(self.current_user)
+    files.files_users_del.append(self.current_user)
+    self.db.add(files)
+    self.db.commit()
+    return {'status': True, 'msg': '成功删除'}
 
 
 def files_message_lib(self, file_uuid):
@@ -106,3 +137,82 @@ def get_page_list(current_page, content, MAX_PAGE):
         'current_page': current_page,
         'pages': pages,
     }
+
+
+def upload_files_qiniu_lib(self, upload_files):
+    """03文件上传到七牛服务器"""
+    img_path_list = []
+    for upload_file in upload_files:
+        file_path = save_qiniu_file(self, upload_file)
+        img_path_list.append(file_path)
+    return img_path_list if img_path_list else None
+
+
+def save_qiniu_file(self, upload_file):
+    """03保存单个文件到七牛"""
+    files_ext = upload_file['filename'].split('.')[-1]
+    files_type = ['jpg', 'bmp', 'png', 'mp4', 'ogg', 'mp3', 'txt']
+    if files_ext not in files_type:
+        return {'status': False, 'msg': '文件格式不正确', 'data': ''}
+
+    file_content = upload_file['body']
+    old_file = Files.file_is_existed(file_content)
+    if old_file is not None:
+        file_path = 'http://oq54v29ct.bkt.clouddn.com/' + old_file.uuid
+        return {'status': True, 'msg': '文件保存成功(其实文件在硬盘上)', 'data': file_path}
+
+    #上传到七牛
+    # with open(path, 'wb') as f:
+    #     f.write(file_content)
+
+    ret, info = upload_qiniu_file_content(file_content)
+    print ret
+    print info
+    if info.status_code != 200:
+        return {'status': False, 'msg': '文件上传到七牛失败', 'data': ''}
+
+    file_name = upload_file['filename']
+    files = Files()
+    files.filename = file_name
+    files.uuid = ret #保存的七牛返回的文件名
+    files.content_length = len(file_content)
+    files.content_type = upload_file['content_type']
+    files.update_time = datetime.now()
+    files.file_hash = upload_file['body']
+    files.files_users.append(self.current_user)
+    self.db.add(files)
+    self.db.commit()
+    file_path = 'http://oq54v29ct.bkt.clouddn.com/' + files.uuid
+    return {'status': True, 'msg': '文件上传到七牛成功', 'data': file_path}
+
+
+def files_download_qiniu_lib(self, uuid):
+    """04从七牛服务器下载文件"""
+    if uuid == '':
+        return {'status':False, 'msg': '没有文件ID'}
+    old_file = Files.by_uuid(uuid)
+    if old_file is None:
+        return {'status': False, 'msg': '文件不存在'}
+    qiniu_url = 'http://oq54v29ct.bkt.clouddn.com/%s' % uuid
+    url = down_qiniu_file(qiniu_url)
+    print url
+    return {'status': True, 'data': url}
+
+
+#重点掌握
+@run_on_executor
+def files_download_lib(self, uuid):
+    filepath = 'files/%s' % uuid
+    self.set_header("Content-Type", "application/octet-stream")
+    self.set_header("Content-Disposition", 'attachment; filename=%s' % uuid)
+    with open(filepath, 'rb') as f:
+        while 1:
+            data = f.read(1024*5)
+            print len(data)
+            if not data:
+                break
+            self.write(data)
+            self.flush()
+            #time.sleep(0.2)
+
+    self.finish()

@@ -8,6 +8,11 @@ from libs.yun_tong_xun.yun_tong_xun_lib import sendTemplateSMS
 
 
 def create_captcha_img(self, pre_code, code):
+    '''
+    返回一个验证码图片
+        :pre_code js设置的两个属性用来重置验证码
+        :code
+     '''
     if pre_code:
         self.conn.delete("captcha:%s" % pre_code)
     text, img = create_captcha()
@@ -15,6 +20,7 @@ def create_captcha_img(self, pre_code, code):
     return img
 
 def auth_captcha(self, captcha_code, code):
+    ''' 判断用户输入的验证码是否正确 '''
     if captcha_code == '':
         return {'status':False, 'msg': '请输入图形验证码'}
 
@@ -24,6 +30,7 @@ def auth_captcha(self, captcha_code, code):
     return {"status":True, 'msg':'正确'}
 
 def login(self, name, password):
+    ''' user login '''
     if name == '' and password == '':
         return {'status': False, 'msg': '用户名和密码不能为空'}
     user = User.by_name(name)
@@ -37,6 +44,7 @@ def login(self, name, password):
     return {'status': False, 'msg': '用户名或密码不正确'}
 
 def regist(self, name, mobile,mobile_captcha, password1, password2, agree):
+    ''' user rigist '''
     if agree == '':
         return {'status': False, 'msg': "您没有点击同意条款"}
 
@@ -60,6 +68,7 @@ def regist(self, name, mobile,mobile_captcha, password1, password2, agree):
     return {'status': True, 'msg': '注册成功'}
 
 def get_mobile_code(self, mobile):
+    ''' 发送手机验证码 '''
     if isinstance(mobile, unicode):
         mobile = mobile.decode('utf-8')
 

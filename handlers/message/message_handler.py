@@ -6,11 +6,13 @@ from libs.flash.flash_lib import flash
 
 from models.permission.permission_model import Role
 from handlers.base.base_handler import BaseHandler, WebBaseHandler
+from libs.message import message_lib
 
 
 class SendMessageHandler(WebBaseHandler):
-    '''  '''
+    ''' 发送消息页面 '''
     def get(self):
+        self.conn.delete('massage:%s' % self.current_user.name) # 到这个页面删除拥护邮件记录
         kw = {
             'roles': Role.all(),
             'user_msg': self.get_redis_json_to_dict('user'),
@@ -45,6 +47,7 @@ class SendMessageHandler(WebBaseHandler):
 class MessageHandler(BaseHandler):
     ''' 发表说说页面 '''
     def get(self):
+
         cache = self.conn.lrange('message:list', -5, -1)
         # print cache  ['{"datetime": "2018-04-20 17-46-58", "useravatar": "23033569-73bd-4872-be6f-8126dd62ecf1.jpeg",}]
         cache.reverse() # 消息顺序反转
@@ -108,6 +111,7 @@ class WebSocketHandler(WebBaseHandler):
         redis_msg = cls.dict_to_json(self, content, send_type, user)
 
         self.conn.rpush('message:%s' % send_type, redis_msg)
+        self.conn.rpush('message:%s' % user, redis_msg) # 为了显示未读消息条数
 
         if cls.users.get(user, None) is not None:
             cls.users[user].write_message(redis_msg)
@@ -117,13 +121,13 @@ class WebSocketHandler(WebBaseHandler):
 
     # ------------------提高部分 结束------------------
 
-    def open(self, *args, **kwargs):
+    def open(self):
         '''
         有用户进来后，存储该用户 {usernaem: self} self是每个登录用户的实例化类
         （用该实例化对象发送是那个消息）
         '''
         WebSocketHandler.users[self.current_user.name] = self
-        # print WebSocketHandler.users
+        print WebSocketHandler.users
         pass
 
     def on_message(self, message):
@@ -137,15 +141,15 @@ class WebSocketHandler(WebBaseHandler):
         })
 
         message = tornado.escape.json_encode(msg) # 转成json
-        print '--'*10
-        print message
+
         self.conn.rpush('message:list', message)  # 存储消息为了显示历史消息
+
         # self.write_message(msg) # 就算不转成json，write_message也能自己编码
 
         # WebSocketHandler.users['liubei'].write_message(message) # 这是将不管谁的message只发给用户liubei
 
-        for k, v in WebSocketHandler.users.iteritems():
-            v.write_message(message) # 给所有用户发送 v是各个用户创建self
+        for f, v in WebSocketHandler.users.iteritems():
+            v.write_message(message)
 
 
     def on_close(self):

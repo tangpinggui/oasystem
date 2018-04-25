@@ -10,6 +10,7 @@ from libs.common.send_email.send_email_libs import send_qq_html_email
 
 
 def user_edit(self, name, password):
+    ''' 用户基本修改信息 '''
     if name == '' or password == '':
         return {'status': False, 'msg': '用户密码不能为空'}
     user = User.by_name(name)
@@ -47,6 +48,12 @@ def send_email_libs(self, email):
 
 
 def auth_email_libs(self, email_code, email, u):
+    '''
+    用户绑定邮件成功否
+        :emial_code 邮箱验证码
+        :email 地址
+        :u    用户id
+     '''
     redis_text = self.conn.get('email%s' % email)
     if redis_text:
         text_dict = json.loads(redis_text)
@@ -65,6 +72,7 @@ def auth_email_libs(self, email_code, email, u):
 
 
 def add_avatar_libs(self, avatar_data):
+    ''' 用户头像图片 '''
     try:
         user = self.current_user
         user.avatar = avatar_data
@@ -75,7 +83,7 @@ def add_avatar_libs(self, avatar_data):
         print 'ha'
         return {'status': True}
     except Exception as e:
-        print '-' * 10
-        print traceback.format_exc()
-        print '-' * 10
+        # print '-' * 10
+        # print traceback.format_exc()
+        # print '-' * 10
         return {'status': False, 'msg': 'error'}

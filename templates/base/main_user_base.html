@@ -137,59 +137,83 @@
                     <li>
                         <a href="#" class="btn btn-default dropdown-toggle info-number" data-toggle="dropdown">
                             <i class="fa fa-envelope-o"></i>
-                            <span class="badge">5</span>
+                            <span class="badge">{% if msg_count() %}{{ msg_count()['count'] }}{% end %}</span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-head pull-right">
-                            <h5 class="title">You have 5 Mails </h5>
+                            <h5 class="title">You have {{  msg_count()['count'] }} Mails </h5>
                             <ul class="dropdown-list normal-list">
-{#                                {% for i in {{ messages }} %}#}
+                                {% if msg_count()['count'] > 5 %}
+                                {% for i in msg_count()['dict_list'][:5] %}
+                                    <li class="new">
+                                        <a href="">
+                                            <span class="thumb"><img src="/static/images/useravatars/{{ i['sender_module'].avatar }}" alt="" /></span>
+                                            <span class="desc">
+                                              <span class="name">{{ i['sender'] }} <span class="badge badge-success">new</span></span>
+                                              <span class="msg">{{ i['content'] }}</span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                {% end %}
+                                {% else %}
+                                 {% for i in msg_count()['dict_list'] %}
                                 <li class="new">
                                     <a href="">
-                                        <span class="thumb"><img src="/static/common/images/photos/user1.png" alt="" /></span>
+                                        <span class="thumb"><img src="/static/images/useravatars/{{ i['sender_module'].avatar }}" alt="" /></span>
                                         <span class="desc">
-                                          <span class="name">John Doe <span class="badge badge-success">new</span></span>
-                                          <span class="msg">Lorem ipsum dolor sit amet...</span>
+                                          <span class="name">{{ i['sender'] }} <span class="badge badge-success">new</span></span>
+                                          <span class="msg">{{ i['content'] }}</span>
                                         </span>
                                     </a>
                                 </li>
-{#                                {% end %}#}
-                                <li>
-                                    <a href="">
-                                        <span class="thumb"><img src="/static/common/images/photos/user2.png" alt="" /></span>
-                                        <span class="desc">
-                                          <span class="name">Jonathan Smith</span>
-                                          <span class="msg">Lorem ipsum dolor sit amet...</span>
-                                        </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="">
-                                        <span class="thumb"><img src="/static/common/images/photos/user3.png" alt="" /></span>
-                                        <span class="desc">
-                                          <span class="name">Jane Doe</span>
-                                          <span class="msg">Lorem ipsum dolor sit amet...</span>
-                                        </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="">
-                                        <span class="thumb"><img src="/static/common/images/photos/user4.png" alt="" /></span>
-                                        <span class="desc">
-                                          <span class="name">Mark Henry</span>
-                                          <span class="msg">Lorem ipsum dolor sit amet...</span>
-                                        </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="">
-                                        <span class="thumb"><img src="/static/common/images/photos/user5.png" alt="" /></span>
-                                        <span class="desc">
-                                          <span class="name">Jim Doe</span>
-                                          <span class="msg">Lorem ipsum dolor sit amet...</span>
-                                        </span>
-                                    </a>
-                                </li>
-                                <li class="new"><a href="">Read All Mails</a></li>
+                                {% end %}
+                                {% end %}
+{#                                <li class="new">#}
+{#                                    <a href="">#}
+{#                                        <span class="thumb"><img src="/static/common/images/photos/user1.png" alt="" /></span>#}
+{#                                        <span class="desc">#}
+{#                                          <span class="name">John Doe <span class="badge badge-success">new</span></span>#}
+{#                                          <span class="msg">Lorem ipsum dolor sit amet...</span>#}
+{#                                        </span>#}
+{#                                    </a>#}
+{#                                </li>#}
+{#                                <li>#}
+{#                                    <a href="">#}
+{#                                        <span class="thumb"><img src="/static/common/images/photos/user2.png" alt="" /></span>#}
+{#                                        <span class="desc">#}
+{#                                          <span class="name">Jonathan Smith</span>#}
+{#                                          <span class="msg">Lorem ipsum dolor sit amet...</span>#}
+{#                                        </span>#}
+{#                                    </a>#}
+{#                                </li>#}
+{#                                <li>#}
+{#                                    <a href="">#}
+{#                                        <span class="thumb"><img src="/static/common/images/photos/user3.png" alt="" /></span>#}
+{#                                        <span class="desc">#}
+{#                                          <span class="name">Jane Doe</span>#}
+{#                                          <span class="msg">Lorem ipsum dolor sit amet...</span>#}
+{#                                        </span>#}
+{#                                    </a>#}
+{#                                </li>#}
+{#                                <li>#}
+{#                                    <a href="">#}
+{#                                        <span class="thumb"><img src="/static/common/images/photos/user4.png" alt="" /></span>#}
+{#                                        <span class="desc">#}
+{#                                          <span class="name">Mark Henry</span>#}
+{#                                          <span class="msg">Lorem ipsum dolor sit amet...</span>#}
+{#                                        </span>#}
+{#                                    </a>#}
+{#                                </li>#}
+{#                                <li>#}
+{#                                    <a href="">#}
+{#                                        <span class="thumb"><img src="/static/common/images/photos/user5.png" alt="" /></span>#}
+{#                                        <span class="desc">#}
+{#                                          <span class="name">Jim Doe</span>#}
+{#                                          <span class="msg">Lorem ipsum dolor sit amet...</span>#}
+{#                                        </span>#}
+{#                                    </a>#}
+{#                                </li>#}
+
+                                <li class="new"><a href="/message/send_message" name="readcurrent" value="yes">Read current Mails</a></li>
                             </ul>
                         </div>
                     </li>

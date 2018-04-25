@@ -44,7 +44,7 @@
 
                     </p>
                     <p>文件uuid:  {{ files.uuid }}  </p>
-                    <p>文件路径:  {% if files.uuid.find('.') != -1 %}http://127.0.0.1:8000/images/{% else %}http://oq54v29ct.bkt.clouddn.com/{% end %}{{ files.uuid }}  </p>
+                    <p>文件路径:  {% if files.uuid.find('.') != -1 %}http://192.168.201.135:8000/images/{% else %}http://oq54v29ct.bkt.clouddn.com/{% end %}{{ files.uuid }}  </p>
                     <p>文件长度:  {{ files.content_length }}  </p>
 
 

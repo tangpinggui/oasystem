@@ -1,6 +1,7 @@
 #coding=utf-8
 from libs.permission.permission_auth.permission_interface_libs import menu_permission
 from libs.flash.flash_lib import get_flashed_messages
+from libs.files.files_libs import msg_count
 
 
 settings = dict(
@@ -13,6 +14,7 @@ settings = dict(
     ui_methods={
         "menu_permission": menu_permission,
         'get_flashed_messages':get_flashed_messages,
+        'msg_count':msg_count,
                 },
     pycket={
         'engine': 'redis',

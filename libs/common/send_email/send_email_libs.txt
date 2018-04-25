@@ -8,7 +8,7 @@ from email.header import Header
 
 username = "3002832062@qq.com"              #qq账户
 authorization_code = "jazlroivptundddc"     #qq邮箱授权码
-from_email = "3002832062@qq.com"            #发送的邮箱
+from_email = "xxxxxxxx@qq.com"            #发送的邮箱
 
 
 def send_qq_plain_email(from_email, to_emails, title, content):
