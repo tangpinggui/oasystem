@@ -39,7 +39,7 @@ class LoginHandler(BaseHandler):
 
 
 class RegistHandler(BaseHandler):
-
+    ''' 注册'''
     def get(self):
         self.render('account/auth_regist.html', message='注册')
 
@@ -64,7 +64,7 @@ class RegistHandler(BaseHandler):
 
 
 class MobileCaptchaHandler(BaseHandler):
-
+    ''' 发送手机验证码 '''
     def post(self):
         mobile = self.get_argument('mobile', '')
         code = self.get_argument('code', '')
